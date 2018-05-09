@@ -1,0 +1,13 @@
+# Global git ignore for auxiliary latex generate files
+# Only commitable latex files are *.tex, images and bib.bib
+/latex_report/report.aux
+/latex_report/report.log
+/latex_report/report.pdf
+/latex_report/report.run.xml
+/latex_report/report.synctex.gz
+/latex_report/report-blx.bib
+
+# JHD uses pycharm and gitignores the idea configurations folder
+/.idea
+
+

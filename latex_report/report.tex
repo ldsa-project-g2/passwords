@@ -1,0 +1,36 @@
+\documentclass{article}%[openany]
+
+\input{Preamble}% no \include here possible!
+
+
+
+\begin{document}
+
+\input{title}
+
+\section*{Summary}
+
+We plan to source and store a large number of username-password files. We will batch process this data using distributed computing to map reduce the file into password-count pairs. We will develop a malleable high level interface to extract information from the map reduced file, saving results to disk in a manageable way.  We will use Apache Spark and discuss its effectiveness.
+
+\section*{Dataset}
+We source a data set consisting of 1.4 billion clear text password and username pairs, totalling to about 50GB of data. The dataset was originally found as an unprotected single file on the dark web by employees of the internet security company 4IQ. According to 41Q, the contents of the dataset were aggregated from many previous leaked credential breaches in the past. The dataset is available through a magnet link from https://github.com/philipperemy/tensorflow-1.4-billion-password-analysis
+
+\section*{Steps}
+
+\begin{enumerate}[(i)]
+
+\item Source the data and make it available on the cluster. Make references in the report to an optimal form of storage for thses text files.
+\item Process the files with map reduce to return password-count pairs and save this information for future use.
+\item Develop an interface to return custom statistics from the map reduced files, and be capable of storing the results. Considering statistics such as, how many passwords contain numbers? How many passwords contain symbols? How many passwords don't contain the letter 'e'? The most common bi-grams? etc.. 
+\item Monitor the cluster and perform tests to evaluate its performance. Such as the effect of scaleability in the horizontal direction.
+\item Discuss expectations and challenges if the dataset was much larger.
+
+\end{enumerate}
+
+
+
+%Some citation example \cite{examplebib}
+
+\printbibliography
+
+\end{document}
