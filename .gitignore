@@ -6,6 +6,8 @@
 /latex_report/report.run.xml
 /latex_report/report.synctex.gz
 /latex_report/report-blx.bib
+/latex_report/report.bbl
+/latex_report/report.blg
 
 # JHD uses pycharm and gitignores the idea configurations folder
 /.idea
