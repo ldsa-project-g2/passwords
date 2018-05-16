@@ -1,6 +1,6 @@
 \documentclass{article}
 
-\input{Preamble}
+\input{preamble}
 \usepackage{lipsum}
 \AtBeginDocument{\renewcommand{\bibname}{\centerline References}}
 \begin{document}
@@ -27,12 +27,12 @@
 
 \section*{\centering Methods}
 \subsection*{\centering Data Formats}
-In December 2017 it was publicly announced by 4iQ, a US digital security company, \cite{data2017breach} that a large database of plaintext username password pairs was downloadable from the world wide web. The validity of the dataset is noted by its prominent status amongst hacking communities and the anecdotal evidence that one of the author's username password pairs was correctly identified in addition to one of our colleagues! However, we also suspect many passwords to be outdated, and some must be considered fake as the result of failed phishing attacks. We make no attempt to verify the integrity of all of the data and do not believe a lack of full integrity to have any meaningful impact on our results. 
+In December 2017 it was publicly announced by 4iQ, a US digital security company, \cite{data2017breach} that a large database of plaintext username password pairs was downloadable from the world wide web. The validity of the dataset is noted by its prominent status amongst hacking communities and the anecdotal evidence that one of the author's username password pairs was correctly identified in addition to one of our colleagues! However, we also suspect many passwords to be outdated, and some must be considered fake as the result of failed phishing attacks. We make no attempt to verify the integrity of all of the data and do not believe a lack of full integrity to have any meaningful impact on our results.
 \par Our raw dataset, then, is a series of plaintext files, organised within a hierarchical directory, sorted alphabetically by the initial characters of any given file. There are approximately 700 files of variable file size. Each line of every file is a specific datapoint and comprises a username-password pair with a colon separator. For example, 'joe@someaccount.com:joespassword1' is a line entry in a file that would be assigned to the directory structure '/j/o/'. Collectively there are approximately 1.4 billion lines to process.
 \par [\_\_INPUT\_\_ on what drive do we store the data and why choose that?]
 
 \subsubsection*{Initial Map Reduce}
-We will employ Apache Spark [\_\_CITE\_\_] to initially process the data with a generic map-reduce operation designed to discard usernames and record a count of each password detected in the dataset. 
+We will employ Apache Spark [\_\_CITE\_\_] to initially process the data with a generic map-reduce operation designed to discard usernames and record a count of each password detected in the dataset.
 
 \subsection*{\centering Computational Experiments}
 
@@ -56,7 +56,7 @@ We source a data set consisting of 1.4 billion clear text password and username 
 
 \item Source the data and make it available on the cluster. Make references in the report to an optimal form of storage for thses text files.
 \item Process the files with map reduce to return password-count pairs and save this information for future use.
-\item Develop an interface to return custom statistics from the map reduced files, and be capable of storing the results. Considering statistics such as, how many passwords contain numbers? How many passwords contain symbols? How many passwords don't contain the letter 'e'? The most common bi-grams? etc.. 
+\item Develop an interface to return custom statistics from the map reduced files, and be capable of storing the results. Considering statistics such as, how many passwords contain numbers? How many passwords contain symbols? How many passwords don't contain the letter 'e'? The most common bi-grams? etc..
 \item Monitor the cluster and perform tests to evaluate its performance. Such as the effect of scaleability in the horizontal direction.
 \item Discuss expectations and challenges if the dataset was much larger.
 
