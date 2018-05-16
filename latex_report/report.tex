@@ -12,7 +12,7 @@
 	\vspace{1cm}
 	{\scshape\Large --- \par}
 	\vspace{0.9cm}
-	\begin{center}{Mohammed Al-Jaff, Albin Stjena, Pontus, J Hamish M Darbyshire}\\
+	\begin{center}{Mohammed Al-Jaff, Albin Stjerna, Pontus Hallden, J Hamish M Darbyshire}\\
 	Uppsala University, Uppsala, Sweden
 	\end{center}
 }
@@ -31,10 +31,23 @@ In December 2017 it was publicly announced by 4iQ, a US digital security company
 \par Our raw dataset, then, is a series of plaintext files, organised within a hierarchical directory, sorted alphabetically by the initial characters of any given file. There are approximately 700 files of variable file size. Each line of every file is a specific datapoint and comprises a username-password pair with a colon separator. For example, 'joe@someaccount.com:joespassword1' is a line entry in a file that would be assigned to the directory structure '/j/o/'. Collectively there are approximately 1.4 billion lines to process.
 \par [\_\_INPUT\_\_ on what drive do we store the data and why choose that?]
 
-\subsubsection*{Initial Map Reduce}
-We will employ Apache Spark~\cite{apache-spark} to initially process the data with a generic map-reduce operation designed to discard usernames and record a count of each password detected in the dataset.
+\subsection*{Operations}
+We employ Apache Spark~\cite{apache-spark} to coordinate our operations across multiple distributed nodes. Each node is created to the following specifications; [\_\_INPUT\_\_ nodes have spec?]
+\par We outline the operations performed by the distributed node cluster below.
+\begin{enumerate}[1.]
+\item We perform a generic map-reduce operation designed to discard usernames from the raw dataset and return a list of unique passwords with an associated count for each. We save this data to our filesystem for further processing.
+\item We analyse, with regular expressions, each unique password detected in 1 to further detect alpha strings, digit strings and special strings, in accordance with the definition outlined by Weir et al. \cite{weir2009password}. We record a count associated with each unique string detected. We also process the overall structure of the password delineated into the subcategories. The results serve as the final objective and we draw contextual conclusions as a point of interest.
+\end{enumerate}
 
 \subsection*{Computational Experiments}
+We perform both strong and weak type experiments on the two different operation types, to evaluate the collective performance of the distributed nodes. 
+
+\begin{enumerate}[1.]
+\item We evaluate the total time to completion of operation 1 with variable numbers of identical worker processing nodes.
+\item We evaluate the time to completion of operation 1 applied to a subset of data, with variable numbers of workers, and the size of the subset linearly proportional to the number of workers.
+\item We evaluate the total time to completion of operation 2 with variable numbers of identical workers.
+\item We evaluate the time to completion of operation 2 applied to a subset of data, with variable numbers of workers, and the size of the subset linearly proportional to the number of workers.
+\end{enumerate}
 
 \section*{ Results}
 
