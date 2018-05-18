@@ -25,35 +25,17 @@
         group: root
         mode: 0644
 
-    - name: Install Python 3
+    - name: Install packages
       become: true
-      apt:
-        name: python3
-        state: present
-
-    - name: Install python-sh
-      become: true
-      apt:
-        name: python-sh
-        state: present
-
-    - name: Install Java
-      become: true
-      apt:
-        name: default-jdk
-        state: present
-
-    - name: Install htop
-      become: true
-      apt:
-        name: htop
-        state: present
-
-    - name: Install Scala
-      become: true
-      apt:
-        name: scala
-        state: present
+      apt: name={{ item }} state=present
+      with_items:
+        - python3
+        - python-sh
+        - default-jdk
+        - htop
+        - scala
+        - nfs-common
+        - python3-pip
 
     - name: Create spark install directory
       become: yes
@@ -126,36 +108,31 @@
         state: stopped
         enabled: false
 
-    - name: Ensure data directory exists
-      file:
-        path: /home/ubuntu/data
-        state: directory
-        owner: ubuntu
-        group: ubuntu
-        mode: "u=rwx,g=rwx,o=xr"
+    #- name: Ensure data directory exists
+    #  file:
+    #    path: /home/ubuntu/data
+    #    state: directory
+    #    owner: ubuntu
+    #    group: ubuntu
+    # mode: "u=rwx,g=rwx,o=xr"
 
     - name: Setup the Spark environment file
       copy:
         content: |
-          export SPARK_MASTER_HOST=192.168.1.86
+          export SPARK_MASTER_HOST=192.168.1.127
           export SPARK_MASTER_PORT=7077
           export PYSPARK_PYTHON=python3
 
         dest: "/usr/local/spark/spark-2.3.0-bin-hadoop2.7/conf/spark-env.sh"
 
     - name: Mount NFS share from the file server
+      become: yes
       mount:
         path: /home/ubuntu/data
         src: 192.168.1.13:/home/ubuntu/data
         fstype: nfs
-        opts: ro
-        state: present
-
-    - name: Install pip3
-      become: true
-      apt:
-        name: python3-pip
-        state: present
+        opts: ro,auto,nofail,noatime,nolock,intr,tcp,actimeo=1800
+        state: mounted
 
     - name: Upgrade pip
       become: yes
@@ -164,9 +141,15 @@
         state: latest
         executable: pip3
 
+    - name: Copy Python requirements
+      copy:
+        src: ../requirements.txt
+        dest: /home/ubuntu/requirements.txt
+
     - name: Install Python requirements
+      become: yes
       pip:
-        requirements: ../requirements.txt
+        requirements: /home/ubuntu/requirements.txt
 
 
 - name: Master setup
@@ -227,3 +210,8 @@
         name: "spark-master.service"
         state: stopped
         enabled: false
+
+#    - name: Copy the code
+#      copy:
+#        src: ../
+#        dest: /home/ubuntu/
