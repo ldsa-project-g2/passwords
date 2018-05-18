@@ -11,10 +11,13 @@ itself, incidentally).
 2. Add the servers to the correct groups in `spark-ansible.inventory`
 and state their correct IP numbers and host names.
 
-3. Provision with `ansible-playbook -ispark-ansible.inventory spark-playbook.yaml`
+3. Provision with `ansible-playbook -ispark-ansible.inventory
+spark-playbook.yaml` (from a computer that has Ansible installed).
+
+4. Add the correct *local* addresses to the workers in `spark-playbook.yaml`
 
 Also, when launching the VMs, make sure to install Ansible by adding the
-customisation script `setup.sh`.
+customisation script `setup.sh` in OpenStack.
 
 The setup works as follows:
 - The master launches the workers in a stand-alone cluster configuration.
