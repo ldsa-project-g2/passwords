@@ -55,16 +55,17 @@ def get_password_count_pair(line):
     return s[0], int(s[1])
 
 
-def get_base_structure_format(word):
+def get_base_structure_format(word, string_len=True):
     """
     Function converts a password to its base structures as defined by the Weir cracking algorithm using their
     definition of L (for alpha strings), D (for digits strings) and S (for special character strings).
 
     Args:
-        word (String): password input to analyse
+        word (String): password input to analyse.
+        string_len (Bool): whether to return info about the base structure length.
 
     Returns:
-        String: denoting the base structure style
+        String: denoting the base structures style.
 
     Notes:
         Uses nonlocal variables defined at module level. In spark context possibly use broadcast vars or supply args?
@@ -74,6 +75,10 @@ def get_base_structure_format(word):
     '-L8-D3-S1-'
     >>> get_base_structure_format('$1Password1$')
     '-S1-D1-L8-D1-S1-'
+    >>> get_base_structure_format('Password123$', string_len=False)
+    '-L-D-S-'
+    >>> get_base_structure_format('$1Password1$', string_len=False)
+    '-S-D-L-D-S-'
 
     """
     structures = re.findall(r'[0-9]+|[a-zA-Z]+|[' + ''.join(SPECIALS) + r']+', word)
@@ -81,13 +86,19 @@ def get_base_structure_format(word):
     for structure in structures:
         if structure[0] in ALPHAS:
             # then this is an alpha string structure
-            base += 'L' + str(len(structure)) + '-'
+            base += 'L'
         elif structure[0] in DIGITS:
             # then this is a digit structure
-            base += 'D' + str(len(structure)) + '-'
+            base += 'D'
         else:
             # the final, least likely outcome is a special structure
-            base += 'S' + str(len(structure)) + '-'
+            base += 'S'
+
+        if string_len:
+            base += str(len(structure)) + '-'
+        else:
+            base += '-'
+
     return base
 
 
@@ -121,7 +132,7 @@ if __name__ == '__main__':
                                                #    reference the first RDD created in the pipeline?
 
         structure_pws = pws2.map(get_password_count_pair) \
-                            .map(lambda x: (get_base_structure_format(x[0]), apply_count(x[1]))) \
+                            .map(lambda x: (get_base_structure_format(x[0], string_len=False), apply_count(x[1]))) \
                             .reduceByKey(add) \
                             .cache()
 
