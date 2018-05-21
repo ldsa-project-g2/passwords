@@ -215,7 +215,7 @@ if __name__ == '__main__':
                                .csv(SAVE_PATH + "rdd_base_struc_form_cnt_" + suffix + ".csv")
 
         # # # 4) perform analysis getting the actual alpha, digit and special strings and performing reduced count
-        rdd_base_struc_data = rdd_pwd_cnt.flatMap(get_base_structures) \
+        rdd_base_struc_data = rdd_pwd_cnt.flatMap(lambda w: get_base_structures(w, use_count=True)) \
                                          .reduceByKey(lambda tot, v: tot + v) \
                                          .cache()
 
