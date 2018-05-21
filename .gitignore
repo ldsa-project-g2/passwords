@@ -13,3 +13,7 @@
 /.idea
 
 
+/provisioning/master-keys/id_rsa
+/provisioning/spark-playbook.retry
+.ipynb_checkpoints
+.DS_Store

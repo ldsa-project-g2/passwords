@@ -40,7 +40,7 @@ We employ Apache Spark~\cite{apache-spark} to coordinate our operations across m
 \end{enumerate}
 
 \subsection*{Computational Experiments}
-We perform both strong and weak type experiments on the two different operation types, to evaluate the collective performance of the distributed nodes. 
+We perform both strong and weak type experiments on the two different operation types, to evaluate the collective performance of the distributed nodes.
 
 \begin{enumerate}[1.]
 \item We evaluate the total time to completion of operation 1 with variable numbers of identical worker processing nodes.
@@ -48,6 +48,25 @@ We perform both strong and weak type experiments on the two different operation 
 \item We evaluate the total time to completion of operation 2 with variable numbers of identical workers.
 \item We evaluate the time to completion of operation 2 applied to a subset of data, with variable numbers of workers, and the size of the subset linearly proportional to the number of workers.
 \end{enumerate}
+
+\subsubsection*{Data Storage and Transfer}
+
+\begin{figure}[H]
+  \includegraphics[width=\linewidth]{rolling}
+  \caption{Outgoing network traffic on the NFS file server during a
+    brief full-cluster experiment run showing likely network
+    saturation. The figure shows a moving median to reduce the noise in
+    the measurements.}\label{fig:rolling-data}
+\end{figure}
+
+
+A preliminary experiment where the data was distributed across the full
+$11$-node cluster using Network File System (NFS) running on a separate
+node was performed. During the execution of a simple counting task
+across the full dataset, measurements of network traffic at the file
+server was taken using \textit{bwm-ng}. A rolling median graph of the
+outgoing network traffic, showing what is most likely network bandwidth
+saturation, can be seen in Figure~\ref{fig:rolling-data}.
 
 \section*{ Results}
 
