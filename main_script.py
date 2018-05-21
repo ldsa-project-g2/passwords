@@ -15,6 +15,7 @@ SAVE_PATH = "/home/ubuntu/data/BreachCompilation/"
 DIGITS = list('0123456789')
 ALPHAS = list('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ')
 SPECIALS = list(' !"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~')
+PATTERN = r'[0-9]+|[a-zA-Z]+|[ !"#$%&\'()*+,-./:;<=>?@\[\]\^_`{\|}~\\\\]+'
 
 
 @contextmanager
@@ -74,9 +75,10 @@ def get_base_structure_format(word, string_len=True):
     '-L-D-S-'
     >>> get_base_structure_format('$1Password1$', string_len=False)
     '-S-D-L-D-S-'
-
+    >>> get_base_structure_format('Password123 !"#$%&()*+,-./:;<=>?@[\\]^_`{|}~'+"'" , string_len=False)
+    '-L-D-S-'
     """
-    structures = re.findall(r'[0-9]+|[a-zA-Z]+|[' + ''.join(SPECIALS) + r']+', word)
+    structures = re.findall(PATTERN, word)
     base = '-'
     for structure in structures:
         if structure[0] in ALPHAS:
@@ -125,8 +127,16 @@ def get_base_structures(word_count, use_count=True):
     ('qwerty', 1)
     >>> next(g)
     ('9', 1)
+
+    >>> g = get_base_structures(('Password123 !"#$%&()*+,-./:;<=>?@[\\]^_`{|}~'+"'", 999))
+    >>> next(g)
+    ('Password', 999)
+    >>> next(g)
+    ('123', 999)
+    >>> next(g)
+    (' !"#$%&()*+,-./:;<=>?@[\\]^_`{|}~\'', 999)
     """
-    structures = re.findall(r'[0-9]+|[a-zA-Z]+|[' + ''.join(SPECIALS) + r']+', word_count[0])
+    structures = re.findall(PATTERN, word_count[0])
 
     if use_count:
         count = word_count[1]
