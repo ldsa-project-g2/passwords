@@ -9,6 +9,7 @@ from contextlib import contextmanager
 import time
 
 DATA_PATH = "/home/ubuntu/data/BreachCompilation/data/*/*"
+SAVE_PATH = "/home/ubuntu/data/BreachCompilation/"
 
 # # # We consider ASCII-128 characters and symbols only..
 DIGITS = list('0123456789')
@@ -167,6 +168,7 @@ def structure_filter(structure, s_type):
 if __name__ == '__main__':
     with spark_context("No Regex") as sc:
         start = time.time()
+        suffix = str(int(start))
 
         # # # 1) read the raw files and process into a password-count RDD which persists in Cache
         # note we do not cache the original data since there is no need for this to persist.
@@ -181,22 +183,36 @@ if __name__ == '__main__':
         # # # 2) perform analysis evaluating the generic base structures without count
         rdd_base_struc_form = rdd_pwd_cnt.map(lambda w: (get_base_structure_format(w[0], string_len=False), 1)) \
                                          .reduceByKey(lambda tot, v: tot + v) \
+                                         .map(lambda w: (w[1], w[0])) \
                                          .sortByKey(ascending=False) \
                                          .cache()
         # rdd_base_struc_form has the format [ ('-L-D-', 1000), ('-L-', 999), .. ]
         print('Our analysis of base structure (without duplicates) show the following most frequently occurring.. ')
         for k in rdd_base_struc_form.take(100):
-            print('{}: {}'.format(k[0], k[1]))
+            print('{}: {}'.format(k[1], k[0]))
+        rdd_base_struc_form.write \
+                           .option("header", "false") \
+                           .option('quote', '"') \
+                           .option('escape', '"') \
+                           .option('delimiter', ',') \
+                           .csv(SAVE_PATH + "rdd_base_struc_form_" + suffix + ".csv")
 
         # # # 3) perform analysis evaluating the generic base structures with count
         rdd_base_struc_form_cnt = rdd_pwd_cnt.map(lambda w: (get_base_structure_format(w[0], string_len=False), w[1])) \
                                              .reduceByKey(lambda tot, v: tot + v) \
+                                             .map(lambda w: (w[1], w[0])) \
                                              .sortByKey(ascending=False) \
                                              .cache()
         # rdd_base_struc_form_cnt has the same format as above with expected larger counts.
         print('Our analysis of base structure (with duplicates) show the following most frequently occurring.. ')
         for k in rdd_base_struc_form_cnt.take(100):
-            print('{}: {}'.format(k[0], k[1]))
+            print('{}: {}'.format(k[1], k[0]))
+        rdd_base_struc_form_cnt.write \
+                               .option("header", "false") \
+                               .option('quote', '"') \
+                               .option('escape', '"') \
+                               .option('delimiter', ',') \
+                               .csv(SAVE_PATH + "rdd_base_struc_form_cnt_" + suffix + ".csv")
 
         # # # 4) perform analysis getting the actual alpha, digit and special strings and performing reduced count
         rdd_base_struc_data = rdd_pwd_cnt.flatMap(get_base_structures) \
@@ -204,20 +220,38 @@ if __name__ == '__main__':
                                          .cache()
 
         # # # 5) filter the data to display some interesting results, take the top 100 base structures in each category
-        print('We determine the following most frequently occuring alpha strings..')
-        for k in rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='alpha'))\
-                                    .sortByKey(ascending=False).take(100):
-            print('{}: {}'.format(k[0], k[1]))
+        print('We determine the following most frequently occurring alpha strings..')
+        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='alpha'))
+        for k in rdd_filter .map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
+            print('{}: {}'.format(k[1], k[0]))
+        rdd_filter.write \
+                  .option("header", "false") \
+                  .option('quote', '"') \
+                  .option('escape', '"') \
+                  .option('delimiter', ',') \
+                  .csv(SAVE_PATH + "rdd_alphas_" + suffix + ".csv")
 
-        print('We determine the following most frequently occuring alpha strings..')
-        for k in rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='digit'))\
-                                    .sortByKey(ascending=False).take(100):
-            print('{}: {}'.format(k[0], k[1]))
+        print('We determine the following most frequently occurring digit strings..')
+        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='digit'))
+        for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
+            print('{}: {}'.format(k[1], k[0]))
+        rdd_filter.write \
+                  .option("header", "false") \
+                  .option('quote', '"') \
+                  .option('escape', '"') \
+                  .option('delimiter', ',') \
+                  .csv(SAVE_PATH + "rdd_digits_" + suffix + ".csv")
 
-        print('We determine the following most frequently occuring alpha strings..')
-        for k in rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='special'))\
-                                    .sortByKey(ascending=False).take(100):
-            print('{}: {}'.format(k[0], k[1]))
+        print('We determine the following most frequently occurring special strings..')
+        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='special'))
+        for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
+            print('{}: {}'.format(k[1], k[0]))
+        rdd_filter.write \
+                  .option("header", "false") \
+                  .option('quote', '"') \
+                  .option('escape', '"') \
+                  .option('delimiter', ',') \
+                  .csv(SAVE_PATH + "rdd_specials_" + suffix + ".csv")
 
         # # # 6) Return procedure stats
         print("Complete. Runtime: {}".format(time.time() - start))
