@@ -17,3 +17,4 @@
 /provisioning/spark-playbook.retry
 .ipynb_checkpoints
 .DS_Store
+*.retry

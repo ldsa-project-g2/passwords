@@ -1,0 +1,182 @@
+---
+- name: Housekeeping
+  hosts: all
+  tasks:
+    - name: Install languages
+      become: true
+      apt:
+        name: language-pack-en
+        state: present
+
+    - name: Setup UK locale
+      become: true
+      locale_gen:
+        name: en_GB.UTF-8
+        state: present
+
+    - name: Add localhost to hostfile
+      become: yes
+      lineinfile:
+        path: /etc/hosts
+        regexp: '^127\.0\.0\.1'
+        line: '127.0.0.1 localhost'
+        owner: root
+        group: root
+        mode: 0644
+
+    - name: Add all local IPs to hostfile
+      become: yes
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {{ item.ip }} {{ item.name }}
+        marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+      with_items:
+        - { ip: 192.168.1.127, name: group-2-project-1 }
+        - { ip: 192.168.1.128, name: group-2-project-2 }
+        - { ip: 192.168.1.136, name: group-2-project-9 }
+        - { ip: 192.168.1.134, name: group-2-project-10 }
+        - { ip: 192.168.1.138, name: group-2-project-11 }
+        - { ip: 192.168.1.124, name: group-2-project-8 }
+        - { ip: 192.168.1.133, name: group-2-project-7 }
+        - { ip: 192.168.1.131, name: group-2-project-6 }
+        - { ip: 192.168.1.132, name: group-2-project-5 }
+        - { ip: 192.168.1.122, name: group-2-project-4 }
+        - { ip: 192.168.1.89, name: group-2-project-3 }
+        - { ip: 192.168.1.13, name: namenode }
+        - { ip: 192.168.1.13, name: group-2-dataset-download }
+
+    - name: Install packages
+      become: true
+      apt: name={{ item }} state=present
+      with_items:
+        - default-jdk
+        - htop
+        - rsync
+
+    - name: Create hadoop install directory
+      become: yes
+      file:
+        path: /usr/local/hadoop
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: "u=rwx,g=wx,o=xr"
+
+    - name: Set authorized key from file
+      authorized_key:
+        user: ubuntu
+        state: present
+        key: "{{ lookup('file', 'master-keys/id_rsa.pub') }}"
+
+
+    - name: Fetch and unzip Hadoop
+      become: yes
+      unarchive:
+        src: http://apache.mirrors.spacedump.net/hadoop/common/hadoop-2.7.6/hadoop-2.7.6.tar.gz
+        dest: /usr/local/hadoop
+        creates: /usr/local/hadoop/hadoop-2.7.6
+        owner: ubuntu
+        group: ubuntu
+        mode: "u=rwx,g=wx,o=xr"
+        remote_src: yes
+
+    - name: Set HADOOP_HOME, PATH and JAVA_HOME
+      become: yes
+      copy:
+        content: |
+          export HADOOP_HOME=/usr/local/hadoop/hadoop-2.7.6
+          export PATH=$HADOOP_HOME/bin:$PATH
+          export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+          export LD_LIBRARY_PATH=$HADOOP_HOME/lib/native/:$LD_LIBRARY_PATH
+
+        dest: "/etc/profile.d/hdfsenv.sh"
+        mode: "u=rwx,g=wx,o=xr"
+
+    - name: Install a list of workers
+      copy:
+        content: |
+          group-2-project-1
+          group-2-project-2
+          group-2-project-3
+          group-2-project-4
+          group-2-project-5
+          group-2-project-6
+          group-2-project-7
+          group-2-project-8
+          group-2-project-9
+          group-2-project-10
+          group-2-project-11
+
+        dest: "/usr/local/hadoop/hadoop-2.7.6/etc/hadoop/slaves"
+
+
+    - name: Set up JAVA_HOME for Hadoop
+      copy:
+        content: |
+          export JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+          export HADOOP_CONF=/usr/local/hadoop/hadoop-2.7.6/hadoop/conf
+
+        dest: "/usr/local/hadoop/hadoop-2.7.6/etc/hadoop/hadoop-env.sh"
+
+
+
+    - name: Generate the core sites list for HDFS
+      copy:
+        content: |
+          <configuration>
+          <property>
+          <name>fs.default.name</name>
+          <value>hdfs://namenode:9000/</value>
+          </property>
+          <property>
+          <name>dfs.permissions</name>
+          <value>false</value>
+          </property>
+          </configuration>
+
+        dest: "/usr/local/hadoop/hadoop-2.7.6/etc/hadoop/core-site.xml"
+
+    - name: Generate the HDFS sites list for HDFS
+      copy:
+        content: |
+          <configuration>
+          <property>
+          <name>dfs.data.dir</name>
+          <value>/home/ubuntu/hadoop/name/data</value>
+          <final>true</final>
+          </property>
+
+          <property>
+          <name>dfs.name.dir</name>
+          <value>/home/ubuntu/hadoop/name</value>
+          <final>true</final>
+          </property>
+
+          <property>
+          <name>dfs.replication</name>
+          <value>2</value>
+          </property>
+          </configuration>
+
+        dest: "/usr/local/hadoop/hadoop-2.7.6/etc/hadoop/hdfs-site.xml"
+
+    - name: Install the master node in master
+      copy:
+        content: |
+          namenode
+        dest: "/usr/local/hadoop/hadoop-2.7.6/etc/hadoop/masters"
+
+    - name: set timezone to Europe/Stockholm
+      timezone:
+        name: Europe/Stockholm
+
+
+- name: Directory Master setup
+  hosts: directory
+  tasks:
+    - name: ensure private key and public one are present
+      copy:
+        src: master-keys/
+        dest: "/home/ubuntu/.ssh/"
+        mode: 0600

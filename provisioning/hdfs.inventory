@@ -1,0 +1,15 @@
+[directory]
+group-2-dataset-download ansible_host=130.238.28.155 ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[clients]
+group-2-project-1 ansible_host=130.238.28.96 ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-2 ansible_host=130.238.28.146  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-3 ansible_host=130.238.28.114  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-4 ansible_host=130.238.28.42  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-5 ansible_host=130.238.28.73  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-6 ansible_host=130.238.28.179  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-7 ansible_host=130.238.28.133  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-8 ansible_host=130.238.28.117  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-9 ansible_host=130.238.28.223  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-10 ansible_host=130.238.28.192  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+group-2-project-11 ansible_host=130.238.28.212  ansible_user=ubuntu ansible_ssh_common_args='-o StrictHostKeyChecking=no'
