@@ -8,8 +8,11 @@ import re
 from contextlib import contextmanager
 import time
 
-DATA_PATH = "/home/ubuntu/data/BreachCompilation/data/*/*"
+NFS_DATA_PATH = "/home/ubuntu/data/BreachCompilation/data/*/*"
+HDFS_DATA_PATH = "hdfs://namenode:9000/user/ubuntu/BreachCompilation/data/*/*"
 SAVE_PATH = "/home/ubuntu/data/BreachCompilation/"
+SPARK_MASTER = "spark://group-2-project-1:7077"
+RUNTIME_DATA_FILE = "/home/ubuntu/runtimes"
 
 # # # We consider ASCII-128 characters and symbols only..
 DIGITS = list('0123456789')
@@ -20,9 +23,8 @@ PATTERN = r'[0-9]+|[a-zA-Z]+|[ !"#$%&\'()*+,-./:;<=>?@\[\]\^_`{\|}~\\\\]+'
 
 @contextmanager
 def spark_context(app_name):
-    sc = pyspark.SparkContext(appName=app_name,
-                              master="spark://192.168.1.127:7077")
-    sc.setLogLevel("ERROR")
+    sc = pyspark.SparkContext(appName=app_name, master=SPARK_MASTER)
+    sc.setLogLevel("WARN")
     yield sc
     sc.stop()
 
@@ -182,7 +184,7 @@ if __name__ == '__main__':
 
         # # # 1) read the raw files and process into a password-count RDD which persists in Cache
         # note we do not cache the original data since there is no need for this to persist.
-        rdd_pwd_cnt = sc.textFile(DATA_PATH) \
+        rdd_pwd_cnt = sc.textFile(HDFS_DATA_PATH) \
                         .map(extract_password) \
                         .filter(is_ascii_128) \
                         .map(lambda w: (w, 1)) \
@@ -264,4 +266,7 @@ if __name__ == '__main__':
                   .csv(SAVE_PATH + "rdd_specials_" + suffix + ".csv")
 
         # # # 6) Return procedure stats
-        print("Complete. Runtime: {}".format(time.time() - start))
+        result_time = time.time() - start
+        print("Complete. Runtime: {}".format(result_time))
+        with open(RUNTIME_DATA_FILE, "a") as fp:
+            fp.write("{}\n".format(result_time))
