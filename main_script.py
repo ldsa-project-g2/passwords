@@ -221,8 +221,8 @@ if __name__ == '__main__':
 
         # # # 5) filter the data to display some interesting results, take the top 100 base structures in each category
         print('We determine the following most frequently occurring alpha strings..')
-        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='alpha'))
-        for k in rdd_filter .map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
+        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='alpha')).cache()
+        for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
             print('{}: {}'.format(k[1], k[0]))
         rdd_filter.write \
                   .option("header", "false") \
@@ -232,7 +232,7 @@ if __name__ == '__main__':
                   .csv(SAVE_PATH + "rdd_alphas_" + suffix + ".csv")
 
         print('We determine the following most frequently occurring digit strings..')
-        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='digit'))
+        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='digit')).cache()
         for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
             print('{}: {}'.format(k[1], k[0]))
         rdd_filter.write \
@@ -243,7 +243,7 @@ if __name__ == '__main__':
                   .csv(SAVE_PATH + "rdd_digits_" + suffix + ".csv")
 
         print('We determine the following most frequently occurring special strings..')
-        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='special'))
+        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='special')).cache()
         for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
             print('{}: {}'.format(k[1], k[0]))
         rdd_filter.write \
