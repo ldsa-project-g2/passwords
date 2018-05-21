@@ -7,6 +7,7 @@ import pyspark
 import re
 from contextlib import contextmanager
 import time
+from pyspark.sql.types import Row
 
 NFS_DATA_PATH = "/home/ubuntu/data/BreachCompilation/data/*/*"
 HDFS_DATA_PATH = "hdfs://namenode:9000/user/ubuntu/BreachCompilation/data/*/*"
@@ -177,6 +178,61 @@ def structure_filter(structure, s_type):
         return s_type == 'special'
 
 
+def df_rows(w, *args):
+    """
+    Utility function for dynamically creating dataframes from RDDs in combination with pyspark Row()
+
+    Args:
+        w (tuple): RDD element
+        *args (string): names for the associated dict keys to which RDD data is assigned. Must be length same as w.
+
+    Retuns:
+        Dict: assigning the data from element w to the dict keys
+
+    Doctests:
+    >>> df_rows(('some_data', 1000), *('Name', 'Count'))
+    {'Name': 'some_data', 'Count': 1000}
+    """
+    d = dict()
+    for i in range(len(w)):
+        d[args[i]] = w[i]
+    return d
+
+
+def convert_toDF(rdd, *args):
+    """
+    Utility function to return a DF from an RDD using pyspark Row()
+
+    Args:
+        rdd (RDD): ...
+        *args (strings): defining column headers of each RDD row element data, must be length of RDD row data.
+
+    Returns:
+        DF: a dataframe with column elements named according to args
+    """
+    df = rdd.map(lambda w: Row(**df_rows(w, *args))).toDF()
+
+
+def write_toCSV(df, filename):
+    """
+    Utility function to write a spark DF to a CSV, with default options
+
+    Args:
+        df (DF): ...
+        filename: to save to, will create a directory if multiple files.
+
+    Returns:
+        None
+    """
+    df.write \
+      .option("header", "true") \
+      .option('quote', '"') \
+      .option('escape', '"') \
+      .option('delimiter', ',') \
+      .csv(filename)
+    return None
+
+
 if __name__ == '__main__':
     with spark_context("No Regex") as sc:
         start = time.time()
@@ -202,12 +258,8 @@ if __name__ == '__main__':
         print('Our analysis of base structure (without duplicates) show the following most frequently occurring.. ')
         for k in rdd_base_struc_form.take(100):
             print('{}: {}'.format(k[1], k[0]))
-        rdd_base_struc_form.write \
-                           .option("header", "false") \
-                           .option('quote', '"') \
-                           .option('escape', '"') \
-                           .option('delimiter', ',') \
-                           .csv(SAVE_PATH + "rdd_base_struc_form_" + suffix + ".csv")
+        df = convert_toDF(rdd_base_struc_form, *('Count', 'Structures'))
+        write_toCSV(df, SAVE_PATH + "rdd_base_struc_form_" + suffix)
 
         # # # 3) perform analysis evaluating the generic base structures with count
         rdd_base_struc_form_cnt = rdd_pwd_cnt.map(lambda w: (get_base_structure_format(w[0], string_len=False), w[1])) \
@@ -219,12 +271,8 @@ if __name__ == '__main__':
         print('Our analysis of base structure (with duplicates) show the following most frequently occurring.. ')
         for k in rdd_base_struc_form_cnt.take(100):
             print('{}: {}'.format(k[1], k[0]))
-        rdd_base_struc_form_cnt.write \
-                               .option("header", "false") \
-                               .option('quote', '"') \
-                               .option('escape', '"') \
-                               .option('delimiter', ',') \
-                               .csv(SAVE_PATH + "rdd_base_struc_form_cnt_" + suffix + ".csv")
+        df = convert_toDF(rdd_base_struc_form_cnt, *('Count', 'Structures'))
+        write_toCSV(df, SAVE_PATH + "rdd_base_struc_form_cnt_" + suffix)
 
         # # # 4) perform analysis getting the actual alpha, digit and special strings and performing reduced count
         rdd_base_struc_data = rdd_pwd_cnt.flatMap(lambda w: get_base_structures(w, use_count=True)) \
@@ -232,38 +280,13 @@ if __name__ == '__main__':
                                          .cache()
 
         # # # 5) filter the data to display some interesting results, take the top 100 base structures in each category
-        print('We determine the following most frequently occurring alpha strings..')
-        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='alpha')).cache()
-        for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
-            print('{}: {}'.format(k[1], k[0]))
-        rdd_filter.write \
-                  .option("header", "false") \
-                  .option('quote', '"') \
-                  .option('escape', '"') \
-                  .option('delimiter', ',') \
-                  .csv(SAVE_PATH + "rdd_alphas_" + suffix + ".csv")
-
-        print('We determine the following most frequently occurring digit strings..')
-        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='digit')).cache()
-        for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
-            print('{}: {}'.format(k[1], k[0]))
-        rdd_filter.write \
-                  .option("header", "false") \
-                  .option('quote', '"') \
-                  .option('escape', '"') \
-                  .option('delimiter', ',') \
-                  .csv(SAVE_PATH + "rdd_digits_" + suffix + ".csv")
-
-        print('We determine the following most frequently occurring special strings..')
-        rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type='special')).cache()
-        for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
-            print('{}: {}'.format(k[1], k[0]))
-        rdd_filter.write \
-                  .option("header", "false") \
-                  .option('quote', '"') \
-                  .option('escape', '"') \
-                  .option('delimiter', ',') \
-                  .csv(SAVE_PATH + "rdd_specials_" + suffix + ".csv")
+        for s_type in ['alpha', 'digit', 'special']:
+            print('We determine the following most frequently occurring {} strings..'.format(s_type))
+            rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w, s_type=s_type)).cache()
+            for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
+                print('{}: {}'.format(k[1], k[0]))
+            df = convert_toDF(rdd_filter, *('Count', '{}-strings'.format(s_type)))
+            write_toCSV(df, SAVE_PATH + "rdd_{}_".format(s_type) + suffix)
 
         # # # 6) Return procedure stats
         result_time = time.time() - start
