@@ -264,8 +264,7 @@ if __name__ == '__main__':
         rdd_base_struc_form = rdd_pwd_cnt.map(lambda w: (get_base_structure_format(w[0], string_len=False), 1)) \
                                          .reduceByKey(lambda tot, v: tot + v) \
                                          .map(lambda w: (w[1], w[0])) \
-                                         .sortByKey(ascending=False) \
-                                         .cache()
+                                         .sortByKey(ascending=False)
         # rdd_base_struc_form has the format [ ('-L-D-', 1000), ('-L-', 999), .. ]
         print('Our analysis of base structure (without duplicates) show the following most frequently occurring.. ')
         for k in rdd_base_struc_form.take(100):
@@ -277,8 +276,7 @@ if __name__ == '__main__':
         rdd_base_struc_form_cnt = rdd_pwd_cnt.map(lambda w: (get_base_structure_format(w[0], string_len=False), w[1])) \
                                              .reduceByKey(lambda tot, v: tot + v) \
                                              .map(lambda w: (w[1], w[0])) \
-                                             .sortByKey(ascending=False) \
-                                             .cache()
+                                             .sortByKey(ascending=False)
         # rdd_base_struc_form_cnt has the same format as above with expected larger counts.
         print('Our analysis of base structure (with duplicates) show the following most frequently occurring.. ')
         for k in rdd_base_struc_form_cnt.take(100):
