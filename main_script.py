@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-
-import findspark
-findspark.init()
-import pyspark
-# import regex
+import time
 import re
 from contextlib import contextmanager
-import time
+import findspark
+import argparse
+findspark.init()
+import pyspark
 from pyspark.sql.types import Row
 
 NFS_DATA_PATH = "/home/ubuntu/data/BreachCompilation/data/*/*"
@@ -234,13 +233,26 @@ def write_toCSV(df, filename):
 
 
 if __name__ == '__main__':
+    argument_parser = argparse.ArgumentParser(description="Parse password dump")
+    argument_parser.add_argument('--storage-backend',
+                                 help="Use HDFS or NFS?",
+                                 type=str,
+                                 choices=["hdfs", "nfs"],
+                                 default="hdfs")
+
+    args = argument_parser.parse_args()
+    if args.storage_backend == "hdfs":
+        data_path = HDFS_DATA_PATH
+    else:
+        data_path = NFS_DATA_PATH
+
     with spark_context("No Regex") as sc:
         start = time.time()
         suffix = str(int(start))
 
         # # # 1) read the raw files and process into a password-count RDD which persists in Cache
         # note we do not cache the original data since there is no need for this to persist.
-        rdd_pwd_cnt = sc.textFile(HDFS_DATA_PATH) \
+        rdd_pwd_cnt = sc.textFile(data_path) \
                         .map(extract_password) \
                         .filter(is_ascii_128) \
                         .map(lambda w: (w, 1)) \
@@ -291,5 +303,6 @@ if __name__ == '__main__':
         # # # 6) Return procedure stats
         result_time = time.time() - start
         print("Complete. Runtime: {}".format(result_time))
-        with open(RUNTIME_DATA_FILE, "a") as fp:
+        with open("{}.{}".format(RUNTIME_DATA_FILE,
+                                 args.storage_backend), "a") as fp:
             fp.write("{}\n".format(result_time))
