@@ -4,7 +4,7 @@ N_RUNS = 2
 FINAL_STORAGE_SOLUTION = "nfs"
 MAX_WORKERS = 10
 WORKER_STEP = 5
-WORKER_START = 1
+WORKER_START = 5
 
 experiments:
 	$(SPARK_HOME)/sbin/stop-all.sh
@@ -26,7 +26,7 @@ experiments:
 .PHONY: worker-experiments
 
 worker-experiments:
-	run=$(WORKER_START) ; while [[ $$run -le $(N_RUNS) ]] ; do \
+	run=$(WORKER_START) ; while [[ $$run -le $(MAX_WORKERS) ]] ; do \
 		$(SPARK_HOME)/sbin/stop-all.sh && \
 		sleep 5 && \
 		./set-spark-workers.py $$run && \
