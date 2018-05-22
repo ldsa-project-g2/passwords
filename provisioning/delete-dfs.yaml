@@ -1,0 +1,7 @@
+- name: Housekeeping
+  hosts: all
+  tasks:
+    - name: Removing existing folder
+      file:
+        path: /home/ubuntu/hadoop
+        state: absent
