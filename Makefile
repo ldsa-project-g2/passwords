@@ -24,7 +24,7 @@ worker-experiments:
 	run=$(WORKER_START) ; while [[ $$run -le $(N_RUNS) ]] ; do \
 		$(SPARK_HOME)/sbin/stop-all.sh && \
 		sleep 5 && \
-		./set-spark-workers $$run && \
+		./set-spark-workers.py $$run && \
 		$(SPARK_HOME)/sbin/start-all.sh && \
 		./main_script.py --storage-backend=$(FINAL_STORAGE_SOLUTION) \
 			> worker-experiment.$(FINAL_STORAGE_SOLUTION).$$run.out ; \
