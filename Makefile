@@ -1,10 +1,10 @@
 .PHONY: experiments
 SHELL := /bin/bash
-N_RUNS = 2
+N_RUNS = 10
 FINAL_STORAGE_SOLUTION = "nfs"
 MAX_WORKERS = 10
-WORKER_STEP = 5
-WORKER_START = 5
+WORKER_STEP = 1
+WORKER_START = 4
 
 experiments:
 	$(SPARK_HOME)/sbin/stop-all.sh
@@ -13,12 +13,14 @@ experiments:
 	$(SPARK_HOME)/sbin/start-all.sh
 
 	run=1 ; while [[ $$run -le $(N_RUNS) ]] ; do \
-		./main_script.py --storage-backend=nfs > nfs-run.$$run.out ; \
+		./main_script.py --storage-backend=nfs $(MAX_WORKERS) \
+			> nfs-run.$$run.out ; \
 		((run = run + 1)) ; \
 	done
 
 	run=1 ; while [[ $$run -le $(N_RUNS) ]] ; do \
-		./main_script.py --storage-backend=hdfs > hdfs-run.$$run.out ; \
+		./main_script.py --storage-backend=hdfs $(MAX_WORKERS) \
+			> hdfs-run.$$run.out ; \
 		((run = run + 1)) ; \
 	done
 
@@ -31,7 +33,7 @@ worker-experiments:
 		sleep 5 && \
 		./set-spark-workers.py $$run && \
 		$(SPARK_HOME)/sbin/start-all.sh && \
-		./main_script.py --storage-backend=$(FINAL_STORAGE_SOLUTION) \
+		./main_script.py --storage-backend=$(FINAL_STORAGE_SOLUTION) $$run \
 			> worker-experiment.$(FINAL_STORAGE_SOLUTION).$$run.out ; \
 		((run = run + $(WORKER_STEP))) ; \
 	done

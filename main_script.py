@@ -240,6 +240,12 @@ if __name__ == '__main__':
                                  choices=["hdfs", "nfs"],
                                  default="hdfs")
 
+    argument_parser.add_argument('worker_count',
+                                 help=("The number of Spark workers we are using, "
+                                       "for statistics."),
+                                 type=int)
+
+
     args = argument_parser.parse_args()
     if args.storage_backend == "hdfs":
         data_path = HDFS_DATA_PATH
@@ -303,4 +309,4 @@ if __name__ == '__main__':
         print("Complete. Runtime: {}".format(result_time))
         with open("{}.{}".format(RUNTIME_DATA_FILE,
                                  args.storage_backend), "a") as fp:
-            fp.write("{}\n".format(result_time))
+            fp.write("{};{}\n".format(args.worker_count, result_time))
