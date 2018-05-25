@@ -1,0 +1,52 @@
+- name: nfs Mount
+  hosts: clients
+  tasks:
+    - name: Mount NFS share from the file server RW
+      become: yes
+      mount:
+        path: /home/ubuntu/data
+        src: group-2-dataset-download:/home/ubuntu/data
+        fstype: nfs
+        opts: rw,auto,nofail,noatime,nolock,intr,tcp,actimeo=1800
+        state: mounted
+
+- name: Bandwidth monitoring
+  hosts: all
+  tasks:
+    - name: Copy the script
+      copy:
+        src: capture-bandwidth.sh
+        dest: /home/ubuntu/
+        mode: 0755
+
+    - name: Install bwm-ng
+      become: true
+      apt: name=bwm-ng state=present
+
+
+    - name: Add bwm-ng-monitor.service
+      become: true
+      systemdunit:
+        name: "bwm-monitor.service"
+        state: present
+        content: |
+          [Unit]
+          Description=Bandwidth monitor
+          After=network.target
+          After=systemd-user-sessions.service
+          After=network-online.target
+
+          [Service]
+          User=ubuntu
+          Type=simple
+          ExecStart=/home/ubuntu/capture-bandwidth.sh
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable the monitor
+      become: true
+      systemd:
+        name: "bwm-monitor.service"
+        state: started
+        enabled: true

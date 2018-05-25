@@ -89,7 +89,7 @@
         path: /home/ubuntu/data
         src: group-2-dataset-download:/home/ubuntu/data
         fstype: nfs
-        opts: ro,auto,nofail,noatime,nolock,intr,tcp,actimeo=1800
+        opts: rw,auto,nofail,noatime,nolock,intr,tcp,actimeo=1800
         state: mounted
 
     - name: Upgrade pip
