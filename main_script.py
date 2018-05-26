@@ -246,6 +246,10 @@ if __name__ == '__main__':
                                        "for statistics."),
                                  type=int)
 
+    argument_parser.add_argument('--save-results',
+                                 help="Dump the results to CSV",
+                                 action='store_true')
+
 
     args = argument_parser.parse_args()
     if args.storage_backend == "hdfs":
@@ -276,8 +280,9 @@ if __name__ == '__main__':
         for k in rdd_base_struc_form.take(100):
             print('{}: {}'.format(k[1], k[0]))
 
-        rdd_base_struc_form.map(lambda w: w[1] + ',' + str(w[0])).saveAsTextFile(SAVE_PATH + "rdd_base_struc_form_"
-                                                                                 + suffix)
+        if args.save_results:
+            rdd_base_struc_form.map(lambda w: w[1] + ',' + str(w[0]))\
+                               .saveAsTextFile(SAVE_PATH + "rdd_base_struc_form_"+ suffix)
 
 
         # # # 3) perform analysis evaluating the generic base structures with count
@@ -290,9 +295,10 @@ if __name__ == '__main__':
         for k in rdd_base_struc_form_cnt.take(100):
             print('{}: {}'.format(k[1], k[0]))
 
-        rdd_base_struc_form_cnt.map(lambda w: w[1] + ',' + str(w[0])).saveAsTextFile(SAVE_PATH
-                                                                                     + "rdd_base_struc_form_cnt_"
-                                                                                     + suffix)
+        if args.save_results:
+            rdd_base_struc_form_cnt.map(lambda w: w[1] + ',' + str(w[0]))\
+                                   .saveAsTextFile(SAVE_PATH + "rdd_base_struc_form_cnt_"
+                                                   + suffix)
 
         # # # 4) perform analysis getting the actual alpha, digit and special strings and performing reduced count
         rdd_base_struc_data = rdd_pwd_cnt.flatMap(lambda w: get_base_structures(w, use_count=True)) \
@@ -306,8 +312,9 @@ if __name__ == '__main__':
             for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
                 print('{}: {}'.format(k[1], k[0]))
 
-            rdd_filter.map(lambda w: w[0] + ',' + str(w[1])).saveAsTextFile(SAVE_PATH + "rdd_{}_".format(s_type)
-                                                                            + suffix)
+            if args.save_results:
+                rdd_filter.map(lambda w: w[0] + ',' + str(w[1]))\
+                          .saveAsTextFile(SAVE_PATH + "rdd_{}_".format(s_type) + suffix)
 
         # # # 6) Return procedure stats
         result_time = time.time() - start
