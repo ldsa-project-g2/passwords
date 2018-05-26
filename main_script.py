@@ -314,4 +314,7 @@ if __name__ == '__main__':
         print("Complete. Runtime: {}".format(result_time))
         with open("{}.{}".format(RUNTIME_DATA_FILE,
                                  args.storage_backend), "a") as fp:
-            fp.write("{};{}\n".format(args.worker_count, result_time))
+            fp.write("{};{};{};{}\n".format(start,
+                                            time.time(),
+                                            args.worker_count,
+                                            result_time))
