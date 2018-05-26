@@ -1,2 +1,15 @@
 username1@pig.com:password1
 username2@pig.com:password\1
+a@a.com:password123
+a@a.com:password123$$
+a@a.com:$$pass123%%
+a@a.com:876\DSL
+a@a.com:^^^qwert123
+a@a.com:banana
+a@a.com:banana
+a@a.com:banana
+a@a.com:banana
+a@a.com:banana
+a@a.com:password123
+
+
