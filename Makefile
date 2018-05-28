@@ -41,3 +41,7 @@ worker-experiments:
 
 clean:
 	$(RM) {nfs,dfs}-run.*.out run.*.out
+
+get-data:
+	scp "ubuntu@130.238.28.96:~/data/bandwidth-*" .
+	scp ubuntu@130.238.28.96:~/runtimes.{hdfs,nfs} .
