@@ -66,3 +66,14 @@ stop-bw-capture:
 		--fork 12 \
 		--module-name=systemd \
 		--args="name=bwm-monitor.service state=stopped"
+
+run-analysis:
+	$(SPARK_HOME)/sbin/stop-all.sh
+	sleep 5
+	./set-spark-workers.py $(MAX_WORKERS)
+	$(SPARK_HOME)/sbin/start-all.sh
+
+	./main_script.py \
+		--storage-backend=nfs \
+		--save-results \
+		 -1 > analysis.run.out
