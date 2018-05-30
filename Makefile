@@ -45,3 +45,24 @@ clean:
 get-data:
 	scp "ubuntu@130.238.28.96:~/data/bandwidth-*" .
 	scp ubuntu@130.238.28.96:~/runtimes.{hdfs,nfs} .
+
+
+.PHONY: start-bw-capture
+
+start-bw-capture:
+	ansible --inventory=provisioning/hdfs.inventory \
+		all \
+		--become \
+		--fork=12 \
+		--module-name=systemd \
+		--args="name=bwm-monitor.service state=started"
+
+.PHONY: stop-bw-capture
+
+stop-bw-capture:
+	ansible --inventory=provisioning/hdfs.inventory \
+		all \
+		--become \
+		--fork 12 \
+		--module-name=systemd \
+		--args="name=bwm-monitor.service state=stopped"
