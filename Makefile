@@ -76,4 +76,6 @@ run-analysis:
 	./main_script.py \
 		--storage-backend=nfs \
 		--save-results \
-		 -1 > analysis.run.out
+		 -1 \
+		> analysis.run.out \
+		2> analysis.run.err
