@@ -308,12 +308,15 @@ if __name__ == '__main__':
         # # # 5) filter the data to display some interesting results, take the top 100 base structures in each category
         for s_type in ['alpha', 'digit', 'special']:
             print('We determine the following most frequently occurring {} strings..'.format(s_type))
-            rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w[0], s_type=s_type)).cache()
-            for k in rdd_filter.map(lambda w: (w[1], w[0])).sortByKey(ascending=False).take(100):
+            rdd_filter = rdd_base_struc_data.filter(lambda w: structure_filter(w[0], s_type=s_type)) \
+                                            .map(lambda w: (w[1], w[0]))\
+                                            .sortByKey(ascending=False)\
+                                            .cache()
+            for k in rdd_filter.take(100):
                 print('{}: {}'.format(k[1], k[0]))
 
             if args.save_results:
-                rdd_filter.map(lambda w: w[0] + ',' + str(w[1]))\
+                rdd_filter.map(lambda w: w[1] + ',' + str(w[0]))\
                           .saveAsTextFile(SAVE_PATH + "rdd_{}_".format(s_type) + suffix)
 
         # # # 6) Return procedure stats
